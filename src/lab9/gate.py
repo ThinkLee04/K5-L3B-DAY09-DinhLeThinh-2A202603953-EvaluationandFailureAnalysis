@@ -82,7 +82,7 @@ def integrity_check(pr: dict, base: dict, spec: dict, base_spec: dict | None = N
         m.get("id") for m in spec.get("metrics", [])
         if isinstance(m, dict) and m.get("id")
         and m.get("level") != "system"
-        and "pass_hat_k" not in str(m.get("grader", ""))
+        and not any(token in str(m.get("grader", "")) for token in ("pass_hat_k", "pass_at_k", "summarize"))
     ]
     for row in rows:
         if isinstance(row, dict):
