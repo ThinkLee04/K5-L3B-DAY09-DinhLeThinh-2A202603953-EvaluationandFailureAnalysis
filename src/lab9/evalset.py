@@ -55,7 +55,11 @@ def load_jsonl(path: Path) -> list[dict[str, Any]]:
 
 
 def sha12(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()[:12]
+    # Git checks out text files with platform-specific newlines (for example,
+    # CRLF on Windows and LF on Linux). Hash a canonical LF representation so
+    # reports generated locally keep the same eval-set identity in CI.
+    content = path.read_bytes().replace(b"\r\n", b"\n")
+    return hashlib.sha256(content).hexdigest()[:12]
 
 
 def build(source: Path = SOURCE) -> tuple[int, int]:
