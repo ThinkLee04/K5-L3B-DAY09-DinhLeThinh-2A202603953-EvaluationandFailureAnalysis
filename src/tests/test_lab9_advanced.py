@@ -39,7 +39,10 @@ def _report(rows, metrics, items=4, seeds=(1, 2)):
 ROWS = [{"item_id": f"E-{i:03d}", "seed": s, "pass_rate": True, "slices": ["denial"] if i < 2 else []}
         for i in range(4) for s in (1, 2)]
 SPEC = {"eval_set_version": "v2", "metrics": [{"id": "pass_rate", "kind": "capability", "blocking": True,
-                                               "threshold": {"min": 0.8}}]}
+                                               "threshold": {"min": 0.8}},
+                         {"id": "pass_5", "kind": "capability", "level": "outcome",
+                          "grader": "lab8.metrics.summarize", "blocking": False,
+                          "threshold": {"min": 0.8}}]}
 
 
 def test_integrity_flags_nan_and_dropped_rows():
@@ -61,6 +64,13 @@ def test_integrity_flags_loosened_spec():
     loose["metrics"][0]["threshold"]["min"] = 0.5
     assert gate.integrity_check(base, base, loose, SPEC)
     assert gate.integrity_check(base, base, SPEC, SPEC) == []
+
+
+def test_integrity_allows_aggregate_metric_without_row_values():
+    from lab9 import gate
+
+    report = _report(copy.deepcopy(ROWS), {"pass_rate": 1.0, "pass_5": 1.0})
+    assert gate.integrity_check(report, report, SPEC) == []
 
 
 def test_slice_check_blocks_a_slice_below_floor():
